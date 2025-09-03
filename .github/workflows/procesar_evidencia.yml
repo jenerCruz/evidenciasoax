@@ -1,0 +1,26 @@
+name: Procesar Evidencia
+
+on:
+  repository_dispatch:
+    types: [subir_evidencia]
+
+jobs:
+  procesar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Crear archivo
+        run: |
+          mkdir -p "evidencias/${{ github.event.client_payload.invertido }}/${{ github.event.client_payload.tipo }}"
+          echo "${{ github.event.client_payload.archivo.contenido }}" | base64 --decode > "evidencias/${{ github.event.client_payload.invertido }}/${{ github.event.client_payload.tipo }}/${{ github.event.client_payload.archivo.nombre }}"
+
+      - name: Hacer commit
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Subir evidencia para ${{ github.event.client_payload.invertido }} (${{ github.event.client_payload.tipo }})"
+          git push
+          
